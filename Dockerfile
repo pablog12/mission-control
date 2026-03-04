@@ -34,7 +34,7 @@ COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/src/lib/schema.sql ./src/lib/schema.sql
 # Create data directory with correct ownership for SQLite
 RUN mkdir -p .data && chown nextjs:nodejs .data
-RUN apt-get update && apt-get install -y curl git ca-certificates python3 make g++ --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl git ca-certificates python3 make g++ procps --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
 
 # Make openclaw version configurable via build arg (default: latest)
