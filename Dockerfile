@@ -35,8 +35,17 @@ COPY --from=build /app/src/lib/schema.sql ./src/lib/schema.sql
 # Create data directory with correct ownership for SQLite
 RUN mkdir -p .data && chown nextjs:nodejs .data
 RUN apt-get update && apt-get install -y curl git ca-certificates python3 make g++ --no-install-recommends && rm -rf /var/lib/apt/lists/*
-RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" && \
-    npm install -g openclaw@2026.3.2
+RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+
+# Make openclaw version configurable via build arg (default: latest)
+ARG OPENCLAW_VERSION=latest
+RUN npm install -g openclaw@${OPENCLAW_VERSION}
+
+# Wrapper injects gateway URL/token for container → host gateway calls
+COPY openclaw-gateway-wrapper.sh /opt/openclaw-wrapper/openclaw
+RUN chmod +x /opt/openclaw-wrapper/openclaw
+ENV PATH="/opt/openclaw-wrapper:${PATH}"
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
