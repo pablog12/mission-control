@@ -18,6 +18,10 @@ RUN if [ -f pnpm-lock.yaml ]; then \
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG NEXT_PUBLIC_GATEWAY_URL
+ARG NEXT_PUBLIC_GATEWAY_TOKEN
+ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL
+ENV NEXT_PUBLIC_GATEWAY_TOKEN=$NEXT_PUBLIC_GATEWAY_TOKEN
 RUN pnpm build
 
 FROM node:20-slim AS runtime
@@ -30,7 +34,9 @@ COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/src/lib/schema.sql ./src/lib/schema.sql
 # Create data directory with correct ownership for SQLite
 RUN mkdir -p .data && chown nextjs:nodejs .data
-RUN apt-get update && apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl git python3 make g++ --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" && \
+    npm install -g openclaw@2026.3.2
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
