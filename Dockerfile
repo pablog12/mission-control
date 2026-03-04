@@ -46,6 +46,9 @@ COPY openclaw-gateway-wrapper.sh /opt/openclaw-wrapper/openclaw
 RUN chmod +x /opt/openclaw-wrapper/openclaw
 ENV PATH="/opt/openclaw-wrapper:${PATH}"
 
+# Ensure .next/cache is writable by nextjs user
+RUN mkdir -p .next/cache && chown nextjs:nodejs .next/cache
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
